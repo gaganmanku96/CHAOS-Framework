@@ -1,0 +1,16 @@
+# Requirements for CHAOS Framework
+
+# Core dependencies
+dataclasses  # Built-in for Python 3.7+
+json         # Built-in
+random       # Built-in
+datetime     # Built-in
+enum         # Built-in
+
+# Optional - for Gemini integration
+google-generativeai>=0.3.0
+
+# Optional - for different output formats
+pandas>=1.3.0        # For data analysis
+numpy>=1.21.0        # For numerical operations
+tqdm>=4.65.0         # For progress bars in large generations

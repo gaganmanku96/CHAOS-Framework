@@ -1,0 +1,42 @@
+# Ignore Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environment
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Generated data files (too large for git)
+chaos_training_data*.json
+chaos_training_data*.jsonl
+training_data_*.json
+quick_start_data*.json
+chaos_curriculum*.json
+
+# Temporary files
+*.tmp
+*.bak
+*.log
+
+# Secrets
+.env
+api_keys.txt
+*_api_key*
+
+# Distribution
+dist/
+build/
+*.egg-info/
