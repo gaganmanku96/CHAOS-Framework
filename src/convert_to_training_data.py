@@ -1,10 +1,85 @@
 """
 Convert CHAOS scenarios to actual training data formats
 This shows exactly how to use the generated data for training
+Includes PEFT-compatible formats like Alpaca for small language model fine-tuning
 """
 
 import json
 from typing import List, Dict, Any
+from dataclasses import dataclass, asdict
+
+
+@dataclass
+class AlpacaEntry:
+    """Alpaca format training entry for PEFT"""
+
+    instruction: str
+    input: str = ""
+    output: str = ""
+
+
+def chaos_to_alpaca_format(chaos_scenario: Dict[str, Any]) -> AlpacaEntry:
+    """Convert CHAOS scenario to Alpaca format for PEFT training"""
+
+    # Create instruction based on scenario and constraints
+    instruction = f"You are an AI assistant helping with a {chaos_scenario['difficulty']} difficulty task. {chaos_scenario['scenario']} {chaos_scenario['constraints']}"
+
+    # Create context input with available tools
+    tools_list = ", ".join(
+        [f"{name}: {desc}" for name, desc in chaos_scenario["tools_available"].items()]
+    )
+    input_text = f"Available tools: {tools_list}"
+
+    # Create response with internal reasoning and actions
+    response_parts = []
+
+    # Add internal reasoning
+    if chaos_scenario.get("internal_dialogue"):
+        response_parts.append("**Internal Analysis:**")
+        for dialogue in chaos_scenario["internal_dialogue"]:
+            if "voices" in dialogue:
+                for voice, thought in dialogue["voices"].items():
+                    response_parts.append(f"- {voice.title()}: {thought}")
+                response_parts.append(
+                    f"Resolution: {dialogue.get('resolution', 'Proceeding with plan')}"
+                )
+                response_parts.append(f"Confidence: {dialogue.get('confidence', 70)}%")
+
+    # Add confidence trajectory
+    if chaos_scenario.get("confidence_trajectory"):
+        response_parts.append(
+            f"\n**Confidence Progression:** {chaos_scenario['confidence_trajectory']}"
+        )
+
+    # Add reality breaks and adaptations
+    if chaos_scenario.get("reality_breaks"):
+        response_parts.append("\n**Adaptation Moments:**")
+        for break_event in chaos_scenario["reality_breaks"]:
+            response_parts.append(
+                f"- Discovery: {break_event.get('discovery', 'Unexpected situation')}"
+            )
+            response_parts.append(
+                f"- Adaptation: {break_event.get('adaptation', 'Adjusting approach')}"
+            )
+
+    # Add final outcome
+    if chaos_scenario.get("final_outcome"):
+        outcome = chaos_scenario["final_outcome"]
+        response_parts.append(f"\n**Final Outcome:**")
+        response_parts.append(
+            f"- Success Level: {outcome.get('success_level', 'partial')}"
+        )
+        response_parts.append(
+            f"- User Satisfaction: {outcome.get('user_satisfaction', 'N/A')}"
+        )
+        if outcome.get("lessons_learned"):
+            response_parts.append(
+                f"- Key Lessons: {', '.join(outcome['lessons_learned'])}"
+            )
+
+    output_text = "\n".join(response_parts)
+
+    return AlpacaEntry(instruction=instruction, input=input_text, output=output_text)
 
 
 def chaos_to_simple_qa(chaos_scenario: Dict[str, Any]) -> Dict[str, str]:
@@ -114,13 +189,15 @@ def build_assistant_response(scenario: Dict[str, Any]) -> str:
 
 
 def convert_batch_for_training(
-    chaos_scenarios: List[Dict], format_type: str = "openai"
+    chaos_scenarios: List[Dict], format_type: str = "alpaca"
 ) -> List[Dict]:
     """Convert a batch of CHAOS scenarios to training format"""
 
     converted = []
     for scenario in chaos_scenarios:
-        if format_type == "openai":
+        if format_type == "alpaca":
+            converted.append(asdict(chaos_to_alpaca_format(scenario)))
+        elif format_type == "openai":
             converted.append(chaos_to_openai_chat(scenario))
         elif format_type == "simple":
             converted.append(chaos_to_simple_qa(scenario))
@@ -130,6 +207,22 @@ def convert_batch_for_training(
             raise ValueError(f"Unknown format: {format_type}")
 
     return converted
+
+
+def save_alpaca_dataset(
+    chaos_scenarios: List[Dict], filename: str = "chaos_alpaca_dataset.json"
+):
+    """Save scenarios in Alpaca format for PEFT training"""
+    alpaca_entries = []
+    for scenario in chaos_scenarios:
+        entry = chaos_to_alpaca_format(scenario)
+        alpaca_entries.append(asdict(entry))
+
+    with open(filename, "w", encoding="utf-8") as f:
+        json.dump(alpaca_entries, f, indent=2, ensure_ascii=False)
+
+    print(f"Saved {len(alpaca_entries)} Alpaca format entries to {filename}")
+    return alpaca_entries
 
 
 # Example usage
@@ -163,19 +256,22 @@ if __name__ == "__main__":
     # Convert all and save
     print("\n\nConverting all scenarios...")
 
-    # Save in different formats
-    for format_type in ["openai", "simple", "thought"]:
+    # Save in different formats including Alpaca for PEFT
+    for format_type in ["alpaca", "openai", "simple", "thought"]:
         converted = convert_batch_for_training(scenarios, format_type)
         filename = f"training_data_{format_type}.json"
 
-        with open(filename, "w") as f:
+        with open(filename, "w", encoding="utf-8") as f:
             if format_type == "openai":
                 # OpenAI expects JSONL
                 for item in converted:
                     f.write(json.dumps(item) + "\n")
             else:
-                json.dump(converted, f, indent=2)
+                json.dump(converted, f, indent=2, ensure_ascii=False)
 
         print(f"✓ Saved {len(converted)} examples to {filename}")
 
     print("\nDone! You can now use these files for fine-tuning.")
+    print("- Use training_data_alpaca.json for PEFT with LoRA/QLoRA")
+    print("- Use training_data_openai.jsonl for OpenAI fine-tuning")
+    print("- Other formats for custom training pipelines")

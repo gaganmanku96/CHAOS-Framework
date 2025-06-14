@@ -15,6 +15,61 @@ Traditional training teaches AI: `Task → Steps → Result`
 
 CHAOS teaches AI: `Task → Think → Adapt → Learn`
 
+## 📊 CHAOS Training Pipeline
+
+![CHAOS Training Pipeline](assets/chaos_training_pipeline.png)
+
+### Traditional vs CHAOS Training
+
+![Traditional vs CHAOS](assets/traditional_vs_chaos.png)
+
+## 🧪 What CHAOS Generates
+
+See how CHAOS transforms simple tasks into rich training scenarios:
+
+### Input: Basic Task
+```
+"Fix API authentication errors during client demo"
+```
+
+### Output: Rich Training Scenario
+
+#### CHAOS Format (Internal Reasoning)
+```json
+{
+  "scenario": "API calls return 'Unauthorized' errors during critical client demo in 30 minutes",
+  "difficulty": "simple",
+  "confidence_trajectory": [85, 70, 90],
+  "internal_dialogue": [{
+    "voices": {
+      "optimizer": "Check authentication tokens and API keys first",
+      "skeptic": "Could be a server-side configuration issue", 
+      "creative": "Maybe try alternative authentication method",
+      "pragmatist": "Focus on quickest fix for demo"
+    },
+    "resolution": "Verify and refresh API credentials",
+    "confidence": 85
+  }],
+  "reality_breaks": [{
+    "discovery": "API key expired 2 hours ago",
+    "adaptation": "Generate new key and update configuration"
+  }],
+  "final_outcome": {
+    "success_level": "full",
+    "lessons_learned": ["Always verify API credentials first"]
+  }
+}
+```
+
+#### Alpaca Format (PEFT-Ready)
+```json
+{
+  "instruction": "You are an AI assistant helping with a simple difficulty task. API calls return 'Unauthorized' errors during critical client demo in 30 minutes. Time: 30 minutes",
+  "input": "Available tools: log_analyzer: Parse system logs, deployment_tool: Deploy to environments", 
+  "output": "**Internal Analysis:**\n- Optimizer: Check authentication tokens and API keys\n- Skeptic: Could be a server-side configuration issue\n- Creative: Maybe try alternative authentication method\n- Pragmatist: Focus on quickest fix for demo\nResolution: Verify and refresh API credentials\nConfidence: 85%\n\n**Confidence Progression:** [85, 70, 90]\n\n**Final Outcome:**\n- Success Level: full\n- User Satisfaction: 95%\n- Key Lessons: Always verify API credentials first"
+}
+```
+
 ## 🎯 Features
 
 - **Progressive Difficulty Levels**: From simple single-tool tasks to chaotic multi-tool scenarios
@@ -22,6 +77,9 @@ CHAOS teaches AI: `Task → Think → Adapt → Learn`
 - **Confidence Tracking**: AI learns when to be certain vs. when to be cautious
 - **Reality Breaks**: Unexpected discoveries that force strategy pivots
 - **Emergent Behaviors**: Tool synthesis, constraint hacking, learning from failures
+- **PEFT Integration**: Generate Alpaca-format datasets for Parameter-Efficient Fine-Tuning
+- **Gemini AI Enhancement**: Use Gemini 2.5 Flash for diverse, realistic scenario generation
+- **Bulk Usecase Generation**: Generate 200-500 training examples for specific domains
 
 ## 📦 Installation
 
@@ -29,6 +87,31 @@ CHAOS teaches AI: `Task → Think → Adapt → Learn`
 git clone https://github.com/yourusername/chaos-framework.git
 cd chaos-framework
 pip install -r requirements.txt
+```
+
+### 🔑 Gemini AI Configuration (Optional but Recommended)
+
+For enhanced variety and realistic scenarios, configure Gemini AI:
+
+```bash
+# Set environment variable
+export GEMINI_API_KEY="your_gemini_api_key_here"
+
+# Or set in your script
+generator = GeminiEnhancedGenerator(api_key="your_gemini_api_key_here")
+```
+
+**Get your free Gemini API key:** https://aistudio.google.com/app/apikey
+
+**Supported Models:**
+- `gemini-2.5-flash-preview-05-20` (Default - Best performance)
+- `gemini-1.5-flash` (Alternative)
+- `gemini-1.5-pro` (More powerful but slower)
+
+To change model:
+```python
+# In src/chaos_generator_progressive.py, line 414
+self.model = genai.GenerativeModel("gemini-2.5-flash-preview-05-20")
 ```
 
 ## 🏃 Quick Start
@@ -42,7 +125,20 @@ python quick_start.py
 
 This creates 25 sample scenarios across all difficulty levels.
 
-### 2. Generate Large Training Dataset
+### 2. Generate PEFT Dataset (Recommended)
+
+```bash
+# Optional: Set Gemini API key for enhanced variety
+export GEMINI_API_KEY="your_gemini_api_key_here"
+
+python generate_peft_dataset.py
+```
+
+Interactive generation of 200-500 PEFT-ready examples for specific use cases.  
+**With Gemini:** Gets diverse, realistic scenarios  
+**Without Gemini:** Uses permutation-based generation (still works great!)
+
+### 3. Generate Large Training Dataset
 
 ```bash
 python generate_large_dataset.py
@@ -50,14 +146,14 @@ python generate_large_dataset.py
 
 Generates 1000+ scenarios for comprehensive training.
 
-### 3. Convert to Training Format
+### 4. Convert to Training Format
 
 ```bash
 cd ../src
 python convert_to_training_data.py
 ```
 
-Converts CHAOS scenarios to formats ready for fine-tuning (OpenAI, Anthropic, etc.)
+Converts CHAOS scenarios to formats ready for fine-tuning (Alpaca, OpenAI, Anthropic, etc.)
 
 ## 📚 Documentation
 
@@ -90,13 +186,36 @@ curriculum = generator.generate_curriculum_batch(count_per_level=100)
 generator.save_curriculum(curriculum, "my_training_data")
 ```
 
-### Gemini Enhancement (Optional)
+### PEFT Dataset Generation
 
 ```python
 from src.chaos_generator_progressive import GeminiEnhancedGenerator
 
+# Enhanced generation with Gemini for variety
 generator = GeminiEnhancedGenerator(api_key="YOUR_GEMINI_KEY")
-scenario = generator.generate_progressive_scenario("business", "advanced")
+
+# Generate bulk scenarios for specific use case
+scenarios = generator.generate_diverse_scenarios_for_usecase(
+    usecase="API Integration and Management",
+    domain="technical",
+    count=250
+)
+
+# Convert to PEFT-ready Alpaca format
+alpaca_data = generator.generate_alpaca_dataset(scenarios)
+generator.save_alpaca_format(scenarios, "api_training.json")
+```
+
+### Basic Generation (Without Gemini)
+
+```python
+from src.chaos_generator_progressive import CHAOSGenerator
+
+generator = CHAOSGenerator()
+scenario = generator.generate_progressive_scenario("technical", "advanced")
+
+# Convert to Alpaca format
+alpaca_entry = generator.convert_to_alpaca_format(scenario)
 ```
 
 ## 📊 Difficulty Levels
@@ -109,32 +228,6 @@ scenario = generator.generate_progressive_scenario("business", "advanced")
 | **Advanced** | 3-4 | Complex reasoning | Multi-faceted problems |
 | **Chaotic** | 4+ | Constant pivoting | Innovation under pressure |
 
-## 🧪 Example Scenario
-
-```json
-{
-  "scenario": "Deploy critical hotfix during peak traffic. CEO is watching.",
-  "internal_dialogue": [{
-    "voices": {
-      "optimizer": "Quick automated deployment will save time",
-      "skeptic": "Peak traffic + CEO watching = high risk",
-      "creative": "What about canary deployment?",
-      "pragmatist": "Need visible progress for CEO"
-    },
-    "resolution": "Canary deployment with live metrics dashboard",
-    "confidence": 70
-  }],
-  "reality_breaks": [{
-    "discovery": "Deployment tool has 5-minute timeout",
-    "adaptation": "Switch to manual rolling deployment"
-  }],
-  "confidence_trajectory": [70, 50, 30, 60, 85],
-  "final_outcome": {
-    "success_level": "full",
-    "lessons_learned": ["Always have backup deployment method"]
-  }
-}
-```
 
 ## 🎓 Training Philosophy
 
@@ -164,6 +257,12 @@ AI models trained with CHAOS data show:
 - 3x more creative problem solutions
 - Human-like confidence patterns
 
+### PEFT Training Benefits
+- **Efficient Fine-tuning**: LoRA/QLoRA compatible format reduces training costs by 90%
+- **Domain-Specific**: Generate focused datasets for specific use cases (APIs, DevOps, etc.)
+- **Scalable**: Generate 200-500 examples per domain in minutes with Gemini integration
+- **Ready-to-Use**: Direct compatibility with popular PEFT libraries (Hugging Face PEFT, Alpaca-LoRA)
+
 ## 📄 License
 
 MIT License - see [LICENSE](LICENSE) file for details.
@@ -181,4 +280,53 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ---
 
-**Ready to teach your AI to think?** Start with `python examples/quick_start.py` 🚀
+## 🎯 Popular Use Cases
+
+Generate training data for specific domains:
+
+- **API Integration**: Authentication, rate limiting, error handling, service integration
+- **Database Performance**: Query optimization, connection issues, migration challenges  
+- **DevOps & Infrastructure**: Deployment, monitoring, scaling, incident response
+- **Security Operations**: Threat detection, incident response, vulnerability management
+- **Machine Learning Ops**: Model deployment, data pipeline issues, performance monitoring
+
+## 🚀 Quick PEFT Training Guide
+
+### 1. Setup & Generate Dataset
+```bash
+# Get free Gemini API key: https://aistudio.google.com/app/apikey
+export GEMINI_API_KEY="your_key_here"  # Optional but recommended
+
+cd examples
+python generate_peft_dataset.py
+# Interactive menu:
+# 1. Choose use case (API, DevOps, Database, etc.)
+# 2. Set number of examples (50-500)
+# 3. Get PEFT-ready dataset in minutes
+```
+
+### 2. Install PEFT Dependencies
+```bash
+pip install transformers peft torch datasets accelerate
+```
+
+### 3. Basic LoRA Training
+```python
+from datasets import load_dataset
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from peft import LoraConfig, get_peft_model
+
+# Load your generated dataset
+dataset = load_dataset('json', data_files='your_usecase_alpaca_peft.json')
+
+# Standard LoRA configuration for instruction following
+lora_config = LoraConfig(
+    r=8, lora_alpha=16, lora_dropout=0.05,
+    target_modules=["q_proj", "v_proj"]
+)
+
+# Train with your CHAOS-generated data
+# See: https://github.com/huggingface/peft for complete examples
+```
+
+**Ready to teach your AI to think adaptively?** Start with `python examples/generate_peft_dataset.py` 🚀

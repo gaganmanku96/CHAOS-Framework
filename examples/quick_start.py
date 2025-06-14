@@ -3,7 +3,8 @@ Quick Start Script - Generate Your First CHAOS Training Data
 """
 
 import sys
-sys.path.append('..')
+
+sys.path.append("..")
 from src.chaos_generator_progressive import CHAOSGenerator
 import json
 
@@ -31,7 +32,7 @@ generator.save_curriculum(small_batch, "quick_start_data")
 print("\n✅ Success! Generated files:")
 print("  - quick_start_data_complete.json (all 25 scenarios)")
 print("  - quick_start_data_simple.json")
-print("  - quick_start_data_basic.json") 
+print("  - quick_start_data_basic.json")
 print("  - quick_start_data_intermediate.json")
 print("  - quick_start_data_advanced.json")
 print("  - quick_start_data_chaotic.json")

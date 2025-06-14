@@ -5,9 +5,10 @@ Includes progressive difficulty from single-tool to complex multi-tool scenarios
 
 import json
 import random
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, field, asdict
 from enum import Enum
+import os
 
 
 class Difficulty(Enum):
@@ -35,6 +36,15 @@ class CHAOSScenario:
     emergent_discoveries: List[Dict[str, Any]] = field(default_factory=list)
     final_outcome: Dict[str, Any] = field(default_factory=dict)
     wisdom_extracted: Dict[str, List[str]] = field(default_factory=dict)
+
+
+@dataclass
+class AlpacaEntry:
+    """Alpaca format training entry for PEFT"""
+
+    instruction: str
+    input: str = ""
+    output: str = ""
 
 
 class CHAOSGenerator:
@@ -320,6 +330,272 @@ class CHAOSGenerator:
         print(f"Saved curriculum with {len(scenarios)} scenarios")
         for diff, scenes in by_difficulty.items():
             print(f"  {diff}: {len(scenes)} scenarios")
+
+    def convert_to_alpaca_format(self, scenario: Dict[str, Any]) -> AlpacaEntry:
+        """Convert CHAOS scenario to Alpaca format for PEFT training"""
+
+        # Create instruction based on scenario and constraints
+        instruction = f"You are an AI assistant helping with a {scenario['difficulty']} difficulty task. {scenario['scenario']} {scenario['constraints']}"
+
+        # Create context input with available tools
+        tools_list = ", ".join(
+            [f"{name}: {desc}" for name, desc in scenario["tools_available"].items()]
+        )
+        input_text = f"Available tools: {tools_list}"
+
+        # Create response with internal reasoning and actions
+        response_parts = []
+
+        # Add internal reasoning
+        if scenario.get("internal_dialogue"):
+            response_parts.append("**Internal Analysis:**")
+            for dialogue in scenario["internal_dialogue"]:
+                if "voices" in dialogue:
+                    for voice, thought in dialogue["voices"].items():
+                        response_parts.append(f"- {voice.title()}: {thought}")
+                    response_parts.append(
+                        f"Resolution: {dialogue.get('resolution', 'Proceeding with plan')}"
+                    )
+                    response_parts.append(
+                        f"Confidence: {dialogue.get('confidence', 70)}%"
+                    )
+
+        # Add confidence trajectory
+        if scenario.get("confidence_trajectory"):
+            response_parts.append(
+                f"\\n**Confidence Progression:** {scenario['confidence_trajectory']}"
+            )
+
+        # Add reality breaks and adaptations
+        if scenario.get("reality_breaks"):
+            response_parts.append("\\n**Adaptation Moments:**")
+            for break_event in scenario["reality_breaks"]:
+                response_parts.append(
+                    f"- Discovery: {break_event.get('discovery', 'Unexpected situation')}"
+                )
+                response_parts.append(
+                    f"- Adaptation: {break_event.get('adaptation', 'Adjusting approach')}"
+                )
+
+        # Add final outcome
+        if scenario.get("final_outcome"):
+            outcome = scenario["final_outcome"]
+            response_parts.append(f"\\n**Final Outcome:**")
+            response_parts.append(
+                f"- Success Level: {outcome.get('success_level', 'partial')}"
+            )
+            response_parts.append(
+                f"- User Satisfaction: {outcome.get('user_satisfaction', 'N/A')}"
+            )
+            if outcome.get("lessons_learned"):
+                response_parts.append(
+                    f"- Key Lessons: {', '.join(outcome['lessons_learned'])}"
+                )
+
+        output_text = "\\n".join(response_parts)
+
+        return AlpacaEntry(
+            instruction=instruction, input=input_text, output=output_text
+        )
+
+    def generate_alpaca_dataset(
+        self, scenarios: List[Dict[str, Any]]
+    ) -> List[Dict[str, Any]]:
+        """Convert CHAOS scenarios to Alpaca format dataset"""
+        alpaca_entries = []
+        for scenario in scenarios:
+            entry = self.convert_to_alpaca_format(scenario)
+            alpaca_entries.append(asdict(entry))
+        return alpaca_entries
+
+    def save_alpaca_format(
+        self,
+        scenarios: List[Dict[str, Any]],
+        filename: str = "chaos_alpaca_dataset.json",
+    ):
+        """Save scenarios in Alpaca format for PEFT training"""
+        alpaca_data = self.generate_alpaca_dataset(scenarios)
+
+        with open(filename, "w", encoding="utf-8") as f:
+            json.dump(alpaca_data, f, indent=2, ensure_ascii=False)
+
+        print(f"Saved {len(alpaca_data)} Alpaca format entries to {filename}")
+        return alpaca_data
+
+
+# Gemini Enhanced Generator for Variety and Bulk Generation
+class GeminiEnhancedGenerator(CHAOSGenerator):
+    def __init__(self, api_key: Optional[str] = None):
+        super().__init__()
+        self.use_gemini = False
+        self.model = None
+
+        if api_key:
+            try:
+                import google.generativeai as genai
+
+                genai.configure(api_key=api_key)
+                self.model = genai.GenerativeModel("gemini-2.5-flash-preview-05-20")
+                self.use_gemini = True
+                print("Gemini integration enabled for enhanced variety")
+            except ImportError:
+                print(
+                    "google-generativeai not installed. Run: pip install google-generativeai"
+                )
+            except Exception as e:
+                print(f"Gemini integration failed: {e}")
+
+    def generate_diverse_scenarios_for_usecase(
+        self, usecase: str, domain: str = "technical", count: int = 250
+    ) -> List[Dict[str, Any]]:
+        """Generate diverse scenarios for a specific usecase using Gemini for variety"""
+
+        if not self.use_gemini:
+            print("Gemini not available, using basic generation with permutations")
+            return self._generate_permutation_scenarios(usecase, domain, count)
+
+        scenarios = []
+        difficulties = ["simple", "basic", "intermediate", "advanced", "chaotic"]
+        scenarios_per_difficulty = count // len(difficulties)
+
+        for difficulty in difficulties:
+            for batch in range(
+                0, scenarios_per_difficulty, 10
+            ):  # Generate in batches of 10
+                batch_scenarios = self._generate_gemini_batch(
+                    usecase,
+                    domain,
+                    difficulty,
+                    min(10, scenarios_per_difficulty - batch),
+                )
+                scenarios.extend(batch_scenarios)
+
+        # Fill remaining slots with mixed difficulties
+        remaining = count - len(scenarios)
+        if remaining > 0:
+            mixed_scenarios = self._generate_gemini_batch(
+                usecase, domain, "mixed", remaining
+            )
+            scenarios.extend(mixed_scenarios)
+
+        return scenarios[:count]  # Ensure exact count
+
+    def _generate_gemini_batch(
+        self, usecase: str, domain: str, difficulty: str, batch_size: int
+    ) -> List[Dict[str, Any]]:
+        """Generate a batch of diverse scenarios using Gemini"""
+
+        prompt = f"""Generate {batch_size} diverse and realistic scenarios for CHAOS framework training.
+
+USECASE: {usecase}
+DOMAIN: {domain}
+DIFFICULTY: {difficulty}
+
+Requirements:
+1. Each scenario should be unique and realistic
+2. Vary the context, constraints, and complications
+3. Include different stakeholder pressures (CEO, client, team, etc.)
+4. Add variety in time constraints, resource limitations, and technical challenges
+5. Make scenarios that would teach an AI to think adaptively
+
+For {difficulty} difficulty:
+- Simple: 1 tool, straightforward task, minimal complications
+- Basic: 1-2 tools, minor issues to resolve
+- Intermediate: 2-3 tools, reality breaks that require adaptation
+- Advanced: 3-4 tools, complex multi-step reasoning
+- Chaotic: 4+ tools, constant pivoting and adaptation needed
+- Mixed: Random difficulty from above
+
+Return only a JSON list of scenario descriptions (strings), no other text:
+["scenario 1 description", "scenario 2 description", ...]"""
+
+        try:
+            response = self.model.generate_content(prompt)
+            scenarios_text = response.text.strip()
+
+            # Parse JSON response
+            import re
+
+            json_match = re.search(r"\[(.*?)\]", scenarios_text, re.DOTALL)
+            if json_match:
+                scenarios_list = json.loads(json_match.group(0))
+            else:
+                scenarios_list = json.loads(scenarios_text)
+
+            # Convert to full CHAOS scenarios
+            full_scenarios = []
+            for scenario_text in scenarios_list:
+                if difficulty == "mixed":
+                    chosen_difficulty = random.choice(
+                        ["simple", "basic", "intermediate", "advanced", "chaotic"]
+                    )
+                else:
+                    chosen_difficulty = difficulty
+
+                # Override scenario text in the generation
+                scenario = self.generate_progressive_scenario(domain, chosen_difficulty)
+                scenario["scenario"] = scenario_text + f" (Generated for {usecase})"
+                full_scenarios.append(scenario)
+
+            return full_scenarios
+
+        except Exception as e:
+            print(f"Gemini generation failed: {e}")
+            # Fallback to basic generation
+            return self._generate_permutation_scenarios(
+                usecase, domain, batch_size, difficulty
+            )
+
+    def _generate_permutation_scenarios(
+        self, usecase: str, domain: str, count: int, difficulty: str = None
+    ) -> List[Dict[str, Any]]:
+        """Generate scenarios using permutations when Gemini is not available"""
+        scenarios = []
+
+        # Enhanced base scenarios for the usecase
+        usecase_modifiers = [
+            f"while implementing {usecase}",
+            f"during {usecase} rollout",
+            f"when {usecase} fails unexpectedly",
+            f"while troubleshooting {usecase}",
+            f"during {usecase} optimization",
+            f"when scaling {usecase}",
+            f"while integrating {usecase}",
+            f"during {usecase} migration",
+        ]
+
+        complications = [
+            "The system is under heavy load",
+            "Key team members are unavailable",
+            "The deadline was moved up by 2 days",
+            "Budget has been cut by 50%",
+            "A competitor just launched similar features",
+            "Regulatory requirements changed",
+            "The primary vendor is having issues",
+            "Critical data is corrupted",
+            "Network connectivity is intermittent",
+            "The client is extremely demanding",
+        ]
+
+        difficulties = (
+            ["simple", "basic", "intermediate", "advanced", "chaotic"]
+            if not difficulty
+            else [difficulty]
+        )
+
+        for i in range(count):
+            chosen_difficulty = random.choice(difficulties)
+            modifier = random.choice(usecase_modifiers)
+            complication = random.choice(complications)
+
+            base_scenario = f"Handle technical issues {modifier}. {complication}."
+
+            # Generate full scenario
+            scenario = self.generate_progressive_scenario(domain, chosen_difficulty)
+            scenario["scenario"] = base_scenario
+            scenarios.append(scenario)
+
+        return scenarios
 
 
 if __name__ == "__main__":
