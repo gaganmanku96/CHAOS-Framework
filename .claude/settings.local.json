@@ -7,7 +7,8 @@
       "Bash(pip uninstall:*)",
       "Bash(chaos-generate:*)",
       "Bash(rg:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(black:*)"
     ],
     "deny": []
   }

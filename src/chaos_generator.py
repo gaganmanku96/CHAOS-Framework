@@ -71,14 +71,12 @@ class CHAOSGenerator:
 
         scenario = CHAOSScenario(
             scenario=scenario_text,
-            difficulty=random.choice([
-                "basic", "intermediate", "advanced", "chaotic"
-            ]),
+            difficulty=random.choice(["basic", "intermediate", "advanced", "chaotic"]),
             tools_available=self.tools.get(domain, self.tools["technical"]),
             constraints=(
-            f"Time: {random.randint(2, 48)} hours, "
-            f"Budget: ${random.randint(5, 100)}k"
-        ),
+                f"Time: {random.randint(2, 48)} hours, "
+                f"Budget: ${random.randint(5, 100)}k"
+            ),
         )
 
         # Add internal dialogue

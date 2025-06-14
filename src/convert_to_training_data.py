@@ -29,10 +29,7 @@ def chaos_to_alpaca_format(chaos_scenario: Dict[str, Any]) -> AlpacaEntry:
 
     # Create context input with available tools
     tools_list = ", ".join(
-        [
-            f"{name}: {desc}"
-            for name, desc in chaos_scenario["tools_available"].items()
-        ]
+        [f"{name}: {desc}" for name, desc in chaos_scenario["tools_available"].items()]
     )
     input_text = f"Available tools: {tools_list}"
 
@@ -50,9 +47,7 @@ def chaos_to_alpaca_format(chaos_scenario: Dict[str, Any]) -> AlpacaEntry:
                     f"Resolution: "
                     f"{dialogue.get('resolution', 'Proceeding with plan')}"
                 )
-                response_parts.append(
-                    f"Confidence: {dialogue.get('confidence', 70)}%"
-                )
+                response_parts.append(f"Confidence: {dialogue.get('confidence', 70)}%")
 
     # Add confidence trajectory
     if chaos_scenario.get("confidence_trajectory"):
@@ -135,8 +130,7 @@ def chaos_to_thought_process(chaos_scenario: Dict[str, Any]) -> Dict[str, str]:
         f"\nFinal outcome: {chaos_scenario['final_outcome']['success_level']}"
     )
     thoughts.append(
-        f"Lesson learned: "
-        f"{chaos_scenario['final_outcome']['lessons_learned'][0]}"
+        f"Lesson learned: " f"{chaos_scenario['final_outcome']['lessons_learned'][0]}"
     )
 
     return {
