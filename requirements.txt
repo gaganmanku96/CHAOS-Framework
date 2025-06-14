@@ -1,12 +1,5 @@
 # Requirements for CHAOS Framework
 
-# Core dependencies
-dataclasses  # Built-in for Python 3.7+
-json         # Built-in
-random       # Built-in
-datetime     # Built-in
-enum         # Built-in
-
 # Enhanced generation with Gemini AI
 google-generativeai>=0.8.0
 
