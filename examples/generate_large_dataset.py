@@ -3,13 +3,13 @@ Generate Large CHAOS Training Dataset
 Customize the numbers below for your needs
 """
 
+import json
+import random
 import sys
+from datetime import datetime
 
 sys.path.append("..")
 from src.chaos_generator_progressive import CHAOSGenerator
-import json
-import random
-from datetime import datetime
 
 print("🔨 CHAOS Framework - Large Dataset Generator")
 print("=" * 50)
@@ -124,7 +124,7 @@ metadata = {
 with open(f"{filename_base}_metadata.json", "w") as f:
     json.dump(metadata, f, indent=2)
 
-print(f"\n✅ Success! Generated files:")
+print("\n✅ Success! Generated files:")
 print(f"   - {filename_base}_complete.json")
 for diff in by_difficulty.keys():
     print(f"   - {filename_base}_{diff}.json")

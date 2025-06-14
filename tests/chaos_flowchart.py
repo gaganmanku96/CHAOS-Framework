@@ -3,9 +3,7 @@ Generate a visual flowchart for the CHAOS Framework training pipeline
 """
 
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-from matplotlib.patches import FancyBboxPatch, ConnectionPatch
-import numpy as np
+from matplotlib.patches import FancyBboxPatch
 
 
 def create_chaos_flowchart():
@@ -357,7 +355,7 @@ def create_chaos_flowchart():
     stats_text = """
 Key Benefits:
 • 40% better adaptation
-• 60% less overengineering  
+• 60% less overengineering
 • 3x more creative solutions
 • Human-like confidence patterns
     """

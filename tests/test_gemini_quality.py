@@ -2,11 +2,11 @@
 Test script to assess Gemini-generated training data quality
 """
 
+import json
 import sys
 
 sys.path.append("src")
 from chaos_generator_progressive import GeminiEnhancedGenerator
-import json
 
 
 def main():
@@ -23,7 +23,7 @@ def main():
     usecase = "Database Performance Optimization"
 
     print(f"🎯 Use Case: {usecase}")
-    print(f"📊 Generating 25 diverse scenarios...")
+    print("📊 Generating 25 diverse scenarios...")
 
     try:
         # Generate scenarios
@@ -69,7 +69,8 @@ def main():
         print("-" * 40)
         for i, scenario in enumerate(scenarios[:5]):
             print(
-                f"{i+1}. [{scenario['difficulty'].upper()}] {scenario['scenario'][:80]}..."
+                f"{i+1}. [{scenario['difficulty'].upper()}] "
+                f"{scenario['scenario'][:80]}..."
             )
             print(f"   Tools: {len(scenario['tools_available'])}")
             print(f"   Confidence: {scenario['confidence_trajectory']}")
@@ -86,9 +87,10 @@ def main():
 
         # Variety assessment
         unique_scenarios = set(s["scenario"] for s in scenarios)
-        print(f"\n📊 Variety Metrics:")
+        print("\n📊 Variety Metrics:")
         print(
-            f"   Unique scenarios: {len(unique_scenarios)}/{len(scenarios)} ({len(unique_scenarios)/len(scenarios)*100:.1f}%)"
+            f"   Unique scenarios: {len(unique_scenarios)}/{len(scenarios)} "
+            f"({len(unique_scenarios)/len(scenarios)*100:.1f}%)"
         )
 
         # Check for usecase relevance
@@ -96,11 +98,12 @@ def main():
             1 for s in scenarios if usecase.lower() in s["scenario"].lower()
         )
         print(
-            f"   Usecase relevance: {usecase_mentions}/{len(scenarios)} ({usecase_mentions/len(scenarios)*100:.1f}%)"
+            f"   Usecase relevance: {usecase_mentions}/{len(scenarios)} "
+            f"({usecase_mentions/len(scenarios)*100:.1f}%)"
         )
 
-        print(f"\n✨ Generation completed successfully!")
-        print(f"🎉 Quality looks good - ready for PEFT training!")
+        print("\n✨ Generation completed successfully!")
+        print("🎉 Quality looks good - ready for PEFT training!")
 
     except Exception as e:
         print(f"❌ Error during generation: {e}")

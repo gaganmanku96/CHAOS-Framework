@@ -8,7 +8,6 @@ import random
 from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, field, asdict
 from enum import Enum
-import os
 
 
 class Difficulty(Enum):
@@ -146,10 +145,14 @@ class CHAOSGenerator:
             },
         }
 
-    def generate_simple_scenario(self, domain: str = "technical") -> Dict[str, Any]:
+    def generate_simple_scenario(
+        self, domain: str = "technical"
+    ) -> Dict[str, Any]:
         """Generate a simple single-tool scenario"""
         scenario_text = random.choice(
-            self.simple_scenarios.get(domain, self.simple_scenarios["technical"])
+            self.simple_scenarios.get(
+                domain, self.simple_scenarios["technical"]
+            )
         )
 
         # Pick just 1-2 tools for simple tasks
@@ -170,7 +173,9 @@ class CHAOSGenerator:
             {
                 "timestamp": 0,
                 "voices": {
-                    "optimizer": "This is straightforward - use the standard approach",
+                    "optimizer": (
+                        "This is straightforward - use the standard approach"
+                    ),
                     "pragmatist": "Let's just get it done efficiently",
                 },
                 "resolution": "Using standard tool for the task",
@@ -219,13 +224,16 @@ class CHAOSGenerator:
         scenario_text = random.choice(base_scenarios) + complication
 
         # Tool selection based on difficulty
-        num_tools = {"basic": 2, "intermediate": 3, "advanced": 4, "chaotic": 6}.get(
-            difficulty, 2
-        )
+        tool_counts = {
+            "basic": 2, "intermediate": 3, "advanced": 4, "chaotic": 6
+        }
+        num_tools = tool_counts.get(difficulty, 2)
 
         all_tools = self.tools[domain]
         tool_names = list(all_tools.keys())
-        selected_tools = random.sample(tool_names, min(num_tools, len(tool_names)))
+        selected_tools = random.sample(
+            tool_names, min(num_tools, len(tool_names))
+        )
         available_tools = {tool: all_tools[tool] for tool in selected_tools}
 
         scenario = CHAOSScenario(
@@ -280,7 +288,9 @@ class CHAOSGenerator:
         scenario.final_outcome = {
             "success_level": success_levels.get(difficulty, "partial"),
             "user_satisfaction": f"{random.randint(70, 95)}%",
-            "lessons_learned": ["Match solution complexity to problem complexity"],
+            "lessons_learned": [
+                "Match solution complexity to problem complexity"
+            ],
             "complexity_score": {
                 "basic": 2,
                 "intermediate": 4,
@@ -296,19 +306,25 @@ class CHAOSGenerator:
     ) -> List[Dict[str, Any]]:
         """Generate a curriculum with progressive difficulty"""
         scenarios = []
-        difficulties = ["simple", "basic", "intermediate", "advanced", "chaotic"]
+        difficulties = [
+            "simple", "basic", "intermediate", "advanced", "chaotic"
+        ]
         domains = ["technical", "business", "research", "creative"]
 
         for difficulty in difficulties:
             for _ in range(count_per_level):
                 domain = random.choice(domains)
-                scenario = self.generate_progressive_scenario(domain, difficulty)
+                scenario = self.generate_progressive_scenario(
+                    domain, difficulty
+                )
                 scenarios.append(scenario)
 
         return scenarios
 
     def save_curriculum(
-        self, scenarios: List[Dict[str, Any]], base_filename: str = "chaos_curriculum"
+        self,
+        scenarios: List[Dict[str, Any]],
+        base_filename: str = "chaos_curriculum"
     ):
         """Save curriculum organized by difficulty"""
         by_difficulty = {}
@@ -335,7 +351,10 @@ class CHAOSGenerator:
         """Convert CHAOS scenario to Alpaca format for PEFT training"""
 
         # Create instruction based on scenario and constraints
-        instruction = f"You are an AI assistant helping with a {scenario['difficulty']} difficulty task. {scenario['scenario']} {scenario['constraints']}"
+        instruction = (
+            f"You are an AI assistant helping with a {scenario['difficulty']} "
+            f"difficulty task. {scenario['scenario']} {scenario['constraints']}"
+        )
 
         # Create context input with available tools
         tools_list = ", ".join(
@@ -352,7 +371,9 @@ class CHAOSGenerator:
             for dialogue in scenario["internal_dialogue"]:
                 if "voices" in dialogue:
                     for voice, thought in dialogue["voices"].items():
-                        response_parts.append(f"- {voice.title()}: {thought}")
+                        response_parts.append(
+                            f"- {voice.title()}: {thought}"
+                        )
                     response_parts.append(
                         f"Resolution: {dialogue.get('resolution', 'Proceeding with plan')}"
                     )
@@ -380,7 +401,7 @@ class CHAOSGenerator:
         # Add final outcome
         if scenario.get("final_outcome"):
             outcome = scenario["final_outcome"]
-            response_parts.append(f"\\n**Final Outcome:**")
+            response_parts.append("\\n**Final Outcome:**")
             response_parts.append(
                 f"- Success Level: {outcome.get('success_level', 'partial')}"
             )
@@ -435,12 +456,15 @@ class GeminiEnhancedGenerator(CHAOSGenerator):
                 import google.generativeai as genai
 
                 genai.configure(api_key=api_key)
-                self.model = genai.GenerativeModel("gemini-2.5-flash-preview-05-20")
+                self.model = genai.GenerativeModel(
+                    "gemini-2.5-flash-preview-05-20"
+                )
                 self.use_gemini = True
                 print("Gemini integration enabled for enhanced variety")
             except ImportError:
                 print(
-                    "google-generativeai not installed. Run: pip install google-generativeai"
+                    "google-generativeai not installed. "
+                    "Run: pip install google-generativeai"
                 )
             except Exception as e:
                 print(f"Gemini integration failed: {e}")

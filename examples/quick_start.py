@@ -2,11 +2,11 @@
 Quick Start Script - Generate Your First CHAOS Training Data
 """
 
+import json
 import sys
 
 sys.path.append("..")
 from src.chaos_generator_progressive import CHAOSGenerator
-import json
 
 print("🚀 CHAOS Framework - Quick Start")
 print("=" * 50)

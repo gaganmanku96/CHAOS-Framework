@@ -7,7 +7,6 @@ import argparse
 import json
 import os
 import sys
-from typing import Optional
 
 from .chaos_generator_progressive import CHAOSGenerator, GeminiEnhancedGenerator
 
@@ -179,7 +178,6 @@ def convert_scenarios(args):
     # Import conversion functions
     from .convert_to_training_data import (
         chaos_to_simple_qa,
-        chaos_to_thought_process,
         chaos_to_openai_chat,
     )
 

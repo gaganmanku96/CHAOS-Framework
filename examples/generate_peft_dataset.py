@@ -3,12 +3,12 @@ PEFT Dataset Generation Example
 Generate large-scale training datasets for PEFT with Gemini integration
 """
 
+import json
+import os
 import sys
 
 sys.path.append("..")
-from src.chaos_generator_progressive import GeminiEnhancedGenerator, CHAOSGenerator
-import json
-import os
+from src.chaos_generator_progressive import GeminiEnhancedGenerator
 
 
 def main():
@@ -98,13 +98,13 @@ def main():
     with open(alpaca_filename, "w", encoding="utf-8") as f:
         json.dump(alpaca_data, f, indent=2, ensure_ascii=False)
 
-    print(f"\n✅ Dataset generation complete!")
-    print(f"📁 Files created:")
+    print("\n✅ Dataset generation complete!")
+    print("📁 Files created:")
     print(f"   - {base_filename}_chaos_raw.json (Raw CHAOS format)")
     print(f"   - {alpaca_filename} (PEFT-ready Alpaca format)")
 
     # Show sample entry
-    print(f"\n📄 Sample Alpaca entry:")
+    print("\n📄 Sample Alpaca entry:")
     print("=" * 60)
     sample = alpaca_data[0]
     print(f"Instruction: {sample['instruction'][:100]}...")
@@ -113,13 +113,13 @@ def main():
     print("=" * 60)
 
     # Show usage instructions
-    print(f"\n🔧 PEFT Training Instructions:")
+    print("\n🔧 PEFT Training Instructions:")
     print("=" * 60)
     print("1. Install requirements:")
     print("   pip install transformers peft torch datasets")
     print()
     print("2. Basic LoRA training example:")
-    print(f"   from datasets import load_dataset")
+    print("   from datasets import load_dataset")
     print(f"   dataset = load_dataset('json', data_files='{alpaca_filename}')")
     print()
     print("3. For advanced training, see:")
@@ -133,7 +133,7 @@ def main():
         diff = scenario["difficulty"]
         difficulty_counts[diff] = difficulty_counts.get(diff, 0) + 1
 
-    print(f"\n📊 Difficulty Distribution:")
+    print("\n📊 Difficulty Distribution:")
     for diff, count in sorted(difficulty_counts.items()):
         percentage = (count / len(scenarios)) * 100
         print(f"   {diff.title()}: {count} scenarios ({percentage:.1f}%)")

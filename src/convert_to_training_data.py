@@ -22,11 +22,17 @@ def chaos_to_alpaca_format(chaos_scenario: Dict[str, Any]) -> AlpacaEntry:
     """Convert CHAOS scenario to Alpaca format for PEFT training"""
 
     # Create instruction based on scenario and constraints
-    instruction = f"You are an AI assistant helping with a {chaos_scenario['difficulty']} difficulty task. {chaos_scenario['scenario']} {chaos_scenario['constraints']}"
+    instruction = (
+        f"You are an AI assistant helping with a {chaos_scenario['difficulty']} "
+        f"difficulty task. {chaos_scenario['scenario']} {chaos_scenario['constraints']}"
+    )
 
     # Create context input with available tools
     tools_list = ", ".join(
-        [f"{name}: {desc}" for name, desc in chaos_scenario["tools_available"].items()]
+        [
+            f"{name}: {desc}"
+            for name, desc in chaos_scenario["tools_available"].items()
+        ]
     )
     input_text = f"Available tools: {tools_list}"
 
@@ -41,14 +47,18 @@ def chaos_to_alpaca_format(chaos_scenario: Dict[str, Any]) -> AlpacaEntry:
                 for voice, thought in dialogue["voices"].items():
                     response_parts.append(f"- {voice.title()}: {thought}")
                 response_parts.append(
-                    f"Resolution: {dialogue.get('resolution', 'Proceeding with plan')}"
+                    f"Resolution: "
+                    f"{dialogue.get('resolution', 'Proceeding with plan')}"
                 )
-                response_parts.append(f"Confidence: {dialogue.get('confidence', 70)}%")
+                response_parts.append(
+                    f"Confidence: {dialogue.get('confidence', 70)}%"
+                )
 
     # Add confidence trajectory
     if chaos_scenario.get("confidence_trajectory"):
         response_parts.append(
-            f"\n**Confidence Progression:** {chaos_scenario['confidence_trajectory']}"
+            f"\n**Confidence Progression:** "
+            f"{chaos_scenario['confidence_trajectory']}"
         )
 
     # Add reality breaks and adaptations
@@ -65,7 +75,7 @@ def chaos_to_alpaca_format(chaos_scenario: Dict[str, Any]) -> AlpacaEntry:
     # Add final outcome
     if chaos_scenario.get("final_outcome"):
         outcome = chaos_scenario["final_outcome"]
-        response_parts.append(f"\n**Final Outcome:**")
+        response_parts.append("\n**Final Outcome:**")
         response_parts.append(
             f"- Success Level: {outcome.get('success_level', 'partial')}"
         )
@@ -85,8 +95,15 @@ def chaos_to_alpaca_format(chaos_scenario: Dict[str, Any]) -> AlpacaEntry:
 def chaos_to_simple_qa(chaos_scenario: Dict[str, Any]) -> Dict[str, str]:
     """Convert to simple question-answer format"""
     return {
-        "question": f"Task: {chaos_scenario['scenario']} Tools available: {', '.join(chaos_scenario['tools_available'].keys())}",
-        "answer": f"Confidence: {chaos_scenario['confidence_trajectory'][0]}%. {chaos_scenario['internal_dialogue'][0]['resolution']}. Outcome: {chaos_scenario['final_outcome']['success_level']}",
+        "question": (
+            f"Task: {chaos_scenario['scenario']} "
+            f"Tools available: {', '.join(chaos_scenario['tools_available'].keys())}"
+        ),
+        "answer": (
+            f"Confidence: {chaos_scenario['confidence_trajectory'][0]}%. "
+            f"{chaos_scenario['internal_dialogue'][0]['resolution']}. "
+            f"Outcome: {chaos_scenario['final_outcome']['success_level']}"
+        ),
     }
 
 
@@ -118,11 +135,15 @@ def chaos_to_thought_process(chaos_scenario: Dict[str, Any]) -> Dict[str, str]:
         f"\nFinal outcome: {chaos_scenario['final_outcome']['success_level']}"
     )
     thoughts.append(
-        f"Lesson learned: {chaos_scenario['final_outcome']['lessons_learned'][0]}"
+        f"Lesson learned: "
+        f"{chaos_scenario['final_outcome']['lessons_learned'][0]}"
     )
 
     return {
-        "input": f"Task: {chaos_scenario['scenario']}\nTools: {list(chaos_scenario['tools_available'].keys())}",
+        "input": (
+            f"Task: {chaos_scenario['scenario']}\n"
+            f"Tools: {list(chaos_scenario['tools_available'].keys())}"
+        ),
         "output": "\n".join(thoughts),
     }
 
@@ -139,7 +160,10 @@ def chaos_to_openai_chat(
         },
         {
             "role": "user",
-            "content": f"{chaos_scenario['scenario']} I have these tools: {', '.join(chaos_scenario['tools_available'].keys())}",
+            "content": (
+                f"{chaos_scenario['scenario']} I have these tools: "
+                f"{', '.join(chaos_scenario['tools_available'].keys())}"
+            ),
         },
         {"role": "assistant", "content": build_assistant_response(chaos_scenario)},
     ]

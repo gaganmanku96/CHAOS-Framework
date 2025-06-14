@@ -71,9 +71,14 @@ class CHAOSGenerator:
 
         scenario = CHAOSScenario(
             scenario=scenario_text,
-            difficulty=random.choice(["basic", "intermediate", "advanced", "chaotic"]),
+            difficulty=random.choice([
+                "basic", "intermediate", "advanced", "chaotic"
+            ]),
             tools_available=self.tools.get(domain, self.tools["technical"]),
-            constraints=f"Time: {random.randint(2, 48)} hours, Budget: ${random.randint(5, 100)}k",
+            constraints=(
+            f"Time: {random.randint(2, 48)} hours, "
+            f"Budget: ${random.randint(5, 100)}k"
+        ),
         )
 
         # Add internal dialogue
@@ -141,7 +146,7 @@ class GeminiEnhancedGenerator(CHAOSGenerator):
                 self.model = genai.GenerativeModel("gemini-pro")
                 self.use_gemini = True
                 print("Gemini integration enabled")
-            except:
+            except (ImportError, Exception) as e:
                 print("Gemini integration failed - using basic generator")
 
 
