@@ -59,7 +59,7 @@ jobs:
       run: twine check dist/*
     
     - name: Store the distribution packages
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: python-package-distributions
         path: dist/
@@ -81,13 +81,10 @@ jobs:
         fi
     
     - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: softprops/action-gh-release@v2
       with:
         tag_name: ${{ steps.extract_version.outputs.version }}
-        release_name: CHAOS Framework ${{ steps.extract_version.outputs.version }}
+        name: CHAOS Framework ${{ steps.extract_version.outputs.version }}
         body: |
           ## What's Changed
           
@@ -127,7 +124,7 @@ jobs:
     
     steps:
     - name: Download all the dists
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: python-package-distributions
         path: dist/
