@@ -13,7 +13,7 @@ from .convert_to_training_data import (
 __all__ = [
     "__version__",
     "CHAOSGenerator",
-    "BasicGenerator", 
+    "BasicGenerator",
     "GeminiEnhancedGenerator",
     "chaos_to_simple_qa",
     "chaos_to_thought_process",
