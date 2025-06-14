@@ -83,8 +83,21 @@ See how CHAOS transforms simple tasks into rich training scenarios:
 
 ## 📦 Installation
 
+### Option 1: Install from PyPI (Recommended)
 ```bash
-git clone https://github.com/yourusername/chaos-framework.git
+pip install chaos-framework
+```
+
+### Option 2: Install from Source
+```bash
+git clone https://github.com/gaganmanku96/chaos-framework.git
+cd chaos-framework
+pip install -e .
+```
+
+### Option 3: Development Setup
+```bash
+git clone https://github.com/gaganmanku96/chaos-framework.git
 cd chaos-framework
 pip install -r requirements.txt
 ```
@@ -116,7 +129,22 @@ self.model = genai.GenerativeModel("gemini-2.5-flash-preview-05-20")
 
 ## 🏃 Quick Start
 
-### 1. Generate Your First Dataset
+### Option 1: Using CLI Tool (After pip install)
+
+```bash
+# Generate 10 scenarios with CLI
+chaos-generate generate --count 10 --domain technical --difficulty intermediate
+
+# Generate balanced curriculum
+chaos-generate curriculum --count-per-level 25
+
+# Convert existing data to different formats
+chaos-generate convert scenarios.json --format alpaca
+```
+
+### Option 2: Using Python Scripts
+
+#### 1. Generate Your First Dataset
 
 ```bash
 cd examples
@@ -125,7 +153,7 @@ python quick_start.py
 
 This creates 25 sample scenarios across all difficulty levels.
 
-### 2. Generate PEFT Dataset (Recommended)
+#### 2. Generate PEFT Dataset (Recommended)
 
 ```bash
 # Optional: Set Gemini API key for enhanced variety
@@ -138,7 +166,7 @@ Interactive generation of 200-500 PEFT-ready examples for specific use cases.
 **With Gemini:** Gets diverse, realistic scenarios  
 **Without Gemini:** Uses permutation-based generation (still works great!)
 
-### 3. Generate Large Training Dataset
+#### 3. Generate Large Training Dataset
 
 ```bash
 python generate_large_dataset.py
@@ -146,7 +174,7 @@ python generate_large_dataset.py
 
 Generates 1000+ scenarios for comprehensive training.
 
-### 4. Convert to Training Format
+#### 4. Convert to Training Format
 
 ```bash
 cd ../src
@@ -164,37 +192,21 @@ Converts CHAOS scenarios to formats ready for fine-tuning (Alpaca, OpenAI, Anthr
 
 ## 🛠️ Usage Examples
 
-### Basic Generation
+### Using as Python Library
 
 ```python
-from src.chaos_generator_progressive import CHAOSGenerator
+# After pip install chaos-framework
+import chaos_framework
 
-generator = CHAOSGenerator()
-
-# Generate single scenario
+# Basic generation
+generator = chaos_framework.CHAOSGenerator()
 scenario = generator.generate_progressive_scenario(
     domain="technical",      # technical/business/research/creative
     difficulty="intermediate"  # simple/basic/intermediate/advanced/chaotic
 )
-```
 
-### Custom Curriculum
-
-```python
-# Generate balanced curriculum
-curriculum = generator.generate_curriculum_batch(count_per_level=100)
-generator.save_curriculum(curriculum, "my_training_data")
-```
-
-### PEFT Dataset Generation
-
-```python
-from src.chaos_generator_progressive import GeminiEnhancedGenerator
-
-# Enhanced generation with Gemini for variety
-generator = GeminiEnhancedGenerator(api_key="YOUR_GEMINI_KEY")
-
-# Generate bulk scenarios for specific use case
+# Enhanced generation with Gemini
+generator = chaos_framework.GeminiEnhancedGenerator(api_key="YOUR_GEMINI_KEY")
 scenarios = generator.generate_diverse_scenarios_for_usecase(
     usecase="API Integration and Management",
     domain="technical",
@@ -203,14 +215,14 @@ scenarios = generator.generate_diverse_scenarios_for_usecase(
 
 # Convert to PEFT-ready Alpaca format
 alpaca_data = generator.generate_alpaca_dataset(scenarios)
-generator.save_alpaca_format(scenarios, "api_training.json")
 ```
 
-### Basic Generation (Without Gemini)
+### Using Source Code Directly
 
 ```python
-from src.chaos_generator_progressive import CHAOSGenerator
+from src.chaos_generator_progressive import CHAOSGenerator, GeminiEnhancedGenerator
 
+# Basic generation
 generator = CHAOSGenerator()
 scenario = generator.generate_progressive_scenario("technical", "advanced")
 
@@ -275,8 +287,8 @@ MIT License - see [LICENSE](LICENSE) file for details.
 
 ## 📬 Contact
 
-- GitHub Issues: [Report bugs or request features](https://github.com/yourusername/chaos-framework/issues)
-- Discussions: [Join the conversation](https://github.com/yourusername/chaos-framework/discussions)
+- GitHub Issues: [Report bugs or request features](https://github.com/gaganmanku96/chaos-framework/issues)
+- Discussions: [Join the conversation](https://github.com/gaganmanku96/chaos-framework/discussions)
 
 ---
 
@@ -292,22 +304,26 @@ Generate training data for specific domains:
 
 ## 🚀 Quick PEFT Training Guide
 
-### 1. Setup & Generate Dataset
+### 1. Install & Generate Dataset
 ```bash
-# Get free Gemini API key: https://aistudio.google.com/app/apikey
-export GEMINI_API_KEY="your_key_here"  # Optional but recommended
+# Install the package
+pip install chaos-framework
 
+# Optional: Get free Gemini API key for enhanced variety
+# https://aistudio.google.com/app/apikey
+export GEMINI_API_KEY="your_key_here" 
+
+# Generate training data using CLI
+chaos-generate generate --count 500 --format alpaca --domain technical
+
+# Or use interactive Python script for specific use cases
 cd examples
 python generate_peft_dataset.py
-# Interactive menu:
-# 1. Choose use case (API, DevOps, Database, etc.)
-# 2. Set number of examples (50-500)
-# 3. Get PEFT-ready dataset in minutes
 ```
 
 ### 2. Install PEFT Dependencies
 ```bash
-pip install transformers peft torch datasets accelerate
+pip install "chaos-framework[peft]"  # Includes transformers, peft, torch, etc.
 ```
 
 ### 3. Basic LoRA Training
@@ -317,7 +333,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from peft import LoraConfig, get_peft_model
 
 # Load your generated dataset
-dataset = load_dataset('json', data_files='your_usecase_alpaca_peft.json')
+dataset = load_dataset('json', data_files='chaos_scenarios.json')
 
 # Standard LoRA configuration for instruction following
 lora_config = LoraConfig(
@@ -329,4 +345,6 @@ lora_config = LoraConfig(
 # See: https://github.com/huggingface/peft for complete examples
 ```
 
-**Ready to teach your AI to think adaptively?** Start with `python examples/generate_peft_dataset.py` 🚀
+**Ready to teach your AI to think adaptively?** 
+- **CLI users**: `pip install chaos-framework && chaos-generate --help`
+- **Python users**: `pip install chaos-framework && python -c "import chaos_framework; print('Ready!')"`

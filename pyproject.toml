@@ -1,0 +1,99 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "chaos-framework"
+version = "1.0.0"
+authors = [
+    {name = "CHAOS Framework Contributors"},
+]
+description = "Agentic AI Training Data Generator - Teaching AI How to Think, Not Just What to Do"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.7"
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+keywords = [
+    "ai",
+    "machine-learning",
+    "training-data",
+    "synthetic-data",
+    "agentic-ai",
+    "peft",
+    "fine-tuning",
+    "llm",
+    "reasoning",
+    "confidence-tracking",
+]
+dependencies = [
+    "google-generativeai>=0.8.0",
+    "pandas>=1.3.0",
+    "numpy>=1.21.0",
+    "tqdm>=4.65.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=6.0",
+    "black>=22.0",
+    "flake8>=4.0",
+    "mypy>=0.910",
+]
+peft = [
+    "transformers>=4.30.0",
+    "peft>=0.4.0",
+    "torch>=2.0.0",
+    "datasets>=2.12.0",
+    "accelerate>=0.20.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/gaganmanku96/chaos-framework"
+Documentation = "https://github.com/gaganmanku96/chaos-framework/tree/main/docs"
+Repository = "https://github.com/gaganmanku96/chaos-framework.git"
+"Bug Tracker" = "https://github.com/gaganmanku96/chaos-framework/issues"
+
+[project.scripts]
+chaos-generate = "src.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+line-length = 88
+target-version = ['py37']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.mypy]
+python_version = "3.7"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
